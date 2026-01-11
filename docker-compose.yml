@@ -1,0 +1,31 @@
+services:
+  mysql:
+    image: mysql:8.0
+    volumes:
+      - ./docker/mysql:/var/lib/mysql
+    environment:
+      - MYSQL_ROOT_PASSWORD=rootpassword
+      - MYSQL_DATABASE=upnl_db
+      - MYSQL_USER=upnl
+      - MYSQL_PASSWORD=password
+    ports:
+      - 13306:3306
+
+  api:
+    build:
+      context: ./api
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+      - DATABASE_URL=${DATABASE_URL}
+    ports:
+      - "3000:3000"
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ./frontend
+      target: prod
+    ports:
+      - "80:80"
+    restart: unless-stopped

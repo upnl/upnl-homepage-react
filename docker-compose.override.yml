@@ -1,0 +1,49 @@
+services:
+  mysql:
+    image: mysql:8.0
+    volumes:
+      - ./docker/mysql:/var/lib/mysql
+    environment:
+      - MYSQL_ROOT_PASSWORD=rootpassword
+      - MYSQL_DATABASE=upnl_db
+      - MYSQL_USER=upnl
+      - MYSQL_PASSWORD=password
+    ports:
+      - 13306:3306
+
+  api:
+    build:
+      context: ./api
+    develop:
+      watch:
+        - action: sync
+          path: ./api/
+          target: /app/
+          ignore:
+            - node_modules/
+    volumes:
+      - /app/node_modules
+    command: pnpm dev
+    environment:
+      - NODE_ENV=development
+      - PORT=3000
+      - DATABASE_URL=${DATABASE_URL}
+    ports:
+      - '3000:3000'
+
+  frontend:
+    build:
+      context: ./frontend
+      target: dev
+    develop:
+      watch:
+        - action: sync
+          path: ./frontend/
+          target: /app/
+          ignore:
+            - node_modules/
+    volumes:
+      - /app/node_modules
+    command: pnpm dev --host 0.0.0.0
+    ports:
+      - '5173:5173'
